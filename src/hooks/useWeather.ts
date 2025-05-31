@@ -41,7 +41,8 @@ export const useWeather = (): UseWeatherReturn => {
   // Cache weather data in localStorage
   useEffect(() => {
     if (weather) {
-      const cacheKey = `weather_${weather.lat}_${weather.lng}`;
+      // Replace 'city' with the actual property from WeatherData that identifies the location, e.g., 'city' or 'id'
+      const cacheKey = `weather_${(weather as any).city || 'default'}`;
       const cacheData = {
         data: weather,
         timestamp: Date.now(),
