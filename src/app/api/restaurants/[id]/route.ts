@@ -1,11 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteParams
 ) {
   try {
-    const id = params.id;
+    const id = context.params.id;
     
     // Your existing logic here
     const response = await fetch(
@@ -15,18 +21,21 @@ export async function GET(
     const data = await response.json();
 
     if (!data.result) {
-      return NextResponse.json(
-        { error: 'Restaurant not found' },
-        { status: 404 }
+      return new Response(
+        JSON.stringify({ error: 'Restaurant not found' }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    return NextResponse.json(data.result);
+    return new Response(
+      JSON.stringify(data.result),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error fetching restaurant details:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch restaurant details' },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ error: 'Failed to fetch restaurant details' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 } 
