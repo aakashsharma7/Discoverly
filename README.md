@@ -46,11 +46,15 @@ Discoverly is an AI-powered local discovery application that helps users find ne
 
 3. Create a `.env.local` file in the root directory and add your environment variables:
    ```
-   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-   OPENAI_API_KEY=your_openai_api_key
-   MONGODB_URI=your_mongodb_uri
-   NEXTAUTH_SECRET=your_nextauth_secret
-   NEXTAUTH_URL=http://localhost:3000
+   NEXT_PUBLIC_OPENWEATHER_API_KEY=
+   NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=
+   OPENAI_API_KEY=
+   MONGODB_URI=
+   NEXTAUTH_SECRET=
+   NEXTAUTH_URL=
+   GOOGLE_AI_API_KEY=
+   NEXT_PUBLIC_SUPABASE_URL=
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=
    ```
 
 4. Run the development server:
