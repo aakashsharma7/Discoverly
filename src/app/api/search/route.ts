@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
   try {
     const body = await request.json();
     const { query, location, radius = 5000, category = 'restaurant' } = body;
@@ -8,7 +8,13 @@ export async function POST(request: NextRequest) {
     if (!query || !location) {
       return new Response(
         JSON.stringify({ error: 'Query and location are required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { 
+          status: 400, 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store'
+          } 
+        }
       );
     }
 
@@ -25,19 +31,37 @@ export async function POST(request: NextRequest) {
     if (data.status !== 'OK') {
       return new Response(
         JSON.stringify({ error: 'Failed to fetch results' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        { 
+          status: 500, 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store'
+          } 
+        }
       );
     }
 
     return new Response(
       JSON.stringify(data.results),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { 
+        status: 200, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store'
+        } 
+      }
     );
   } catch (error) {
     console.error('Search error:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to process search request' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { 
+        status: 500, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store'
+        } 
+      }
     );
   }
 } 
