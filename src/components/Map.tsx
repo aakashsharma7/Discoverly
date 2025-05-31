@@ -97,7 +97,7 @@ export const Map = ({
 
     markers.forEach((marker) => {
       const place = places.find((p) => p.id === selectedPlaceId);
-      if (place && marker.getPosition()?.equals(place.location)) {
+      if (place && marker.getPosition()?.equals(new google.maps.LatLng(place.location.lat, place.location.lng))) {
         marker.setAnimation(google.maps.Animation.BOUNCE);
         map.panTo(place.location);
       } else {
