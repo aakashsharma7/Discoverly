@@ -1,50 +1,39 @@
-import { NextResponse } from 'next/server';
-import { SearchFilters, Place } from '@/types';
-import { searchRestaurants } from '@/services/google-places';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const filters: SearchFilters = await request.json();
-    console.log('Search filters:', filters);
+    const body = await request.json();
+    const { query, location, radius = 5000, category = 'restaurant' } = body;
 
-    if (!filters) {
+    if (!query || !location) {
       return NextResponse.json(
-        { success: false, error: 'Search filters are required' },
+        { error: 'Query and location are required' },
         { status: 400 }
       );
     }
 
-    if (!filters.location?.lat || !filters.location?.lng) {
-      return NextResponse.json(
-        { success: false, error: 'Location coordinates are required' },
-        { status: 400 }
-      );
-    }
-
-    const restaurants = await searchRestaurants(
-      filters.location.lat,
-      filters.location.lng,
-      filters.radius || 5000,
-      filters.category === 'restaurant' ? filters.cuisine : undefined
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
+        query
+      )}&location=${location.lat},${location.lng}&radius=${radius}&type=${category}&key=${
+        process.env.GOOGLE_MAPS_API_KEY
+      }`
     );
-    console.log('Restaurants found:', restaurants);
 
-    // Add weather data to each restaurant
-    const placesWithWeather = restaurants.map(place => ({
-      ...place,
-      weather: {
-        condition: 'Sunny', // This would come from a weather API in a real app
-        temperature: 25,
-        humidity: 65,
-      },
-    }));
-    console.log('Places with weather:', placesWithWeather);
+    const data = await response.json();
 
-    return NextResponse.json({ success: true, data: placesWithWeather });
+    if (data.status !== 'OK') {
+      return NextResponse.json(
+        { error: 'Failed to fetch results' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data.results);
   } catch (error) {
-    console.error('Search API error:', error);
+    console.error('Search error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to search places' },
+      { error: 'Failed to process search request' },
       { status: 500 }
     );
   }
