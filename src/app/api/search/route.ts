@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -6,9 +6,9 @@ export async function POST(request: NextRequest) {
     const { query, location, radius = 5000, category = 'restaurant' } = body;
 
     if (!query || !location) {
-      return NextResponse.json(
-        { error: 'Query and location are required' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: 'Query and location are required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -23,18 +23,21 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
 
     if (data.status !== 'OK') {
-      return NextResponse.json(
-        { error: 'Failed to fetch results' },
-        { status: 500 }
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch results' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    return NextResponse.json(data.results);
+    return new Response(
+      JSON.stringify(data.results),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Search error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process search request' },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ error: 'Failed to process search request' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 } 
