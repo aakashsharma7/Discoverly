@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { SearchProvider } from '@/contexts/SearchContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -11,8 +12,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Discoverly - Find Your Next Favorite Restaurant',
-  description: 'Discover the best local restaurants and cafes based on your preferences and mood.',
+  title: 'Discoverly - Find Your Perfect Restaurant',
+  description: 'Discover the best restaurants near you with AI-powered recommendations',
 }
 
 declare global {
@@ -33,19 +34,21 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body suppressHydrationWarning className="font-sans">
         <AuthProvider>
-          {children}
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: '#1a1a1a',
-                color: '#fff',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '0.75rem',
-                padding: '1rem',
-              },
-            }}
-          />
+          <SearchProvider>
+            {children}
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: '#1a1a1a',
+                  color: '#fff',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '0.75rem',
+                  padding: '1rem',
+                },
+              }}
+            />
+          </SearchProvider>
         </AuthProvider>
       </body>
     </html>

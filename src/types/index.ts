@@ -1,10 +1,8 @@
 export interface User {
   id: string;
-  name: string;
   email: string;
-  image?: string;
-  preferences?: UserPreferences;
-  favorites?: string[];
+  name?: string;
+  avatar?: string;
 }
 
 export interface UserPreferences {
@@ -30,25 +28,19 @@ export interface Weather {
 
 export interface Place {
   id: string;
+  place_id?: string;
   name: string;
-  description: string;
+  description?: string;
   address: string;
   location: Location;
   category: string;
-  priceLevel: number;
-  rating: number;
+  priceLevel?: number;
+  rating?: number;
   photos: string[];
-  weather?: Weather;
   menuUrl?: string;
   hasOnlineDelivery?: boolean;
   hasTableBooking?: boolean;
-  vicinity?: string;
-  formatted_address?: string;
-  user_ratings_total?: number;
-  price_level?: number;
-  place_id?: string;
-  website?: string;
-  url?: string;
+  weather?: WeatherData;
 }
 
 export interface SearchFilters {
@@ -70,12 +62,29 @@ export interface WeatherData {
   condition: string;
   temperature: number;
   humidity: number;
-  windSpeed: number;
-  icon: string;
 }
 
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
+  details?: string;
+}
+
+export interface Favorite {
+  id: string;
+  user_id: string;
+  place_id: string;
+  place_data: Place;
+  created_at: string;
+}
+
+export interface Review {
+  id: string;
+  user_id: string;
+  place_id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  user?: User;
 } 

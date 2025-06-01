@@ -1,67 +1,87 @@
-import { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { SearchFilters, Place } from '@/types';
+import { searchRestaurants } from '@/services/google-places';
 
-export async function POST(request: NextRequest): Promise<Response> {
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { query, location, radius = 5000, category = 'restaurant' } = body;
+    const filters: SearchFilters = await request.json();
+    console.log('Search filters:', filters);
 
-    if (!query || !location) {
-      return new Response(
-        JSON.stringify({ error: 'Query and location are required' }),
-        { 
-          status: 400, 
-          headers: { 
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store'
-          } 
-        }
+    // Validate required fields
+    if (!filters) {
+      return NextResponse.json(
+        { success: false, error: 'Search filters are required' },
+        { status: 400 }
       );
     }
 
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
-        query
-      )}&location=${location.lat},${location.lng}&radius=${radius}&type=${category}&key=${
-        process.env.GOOGLE_MAPS_API_KEY
-      }`
+    if (!filters.location?.lat || !filters.location?.lng) {
+      return NextResponse.json(
+        { success: false, error: 'Location coordinates are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate coordinate ranges
+    if (filters.location.lat < -90 || filters.location.lat > 90) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid latitude value' },
+        { status: 400 }
+      );
+    }
+
+    if (filters.location.lng < -180 || filters.location.lng > 180) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid longitude value' },
+        { status: 400 }
+      );
+    }
+
+    // Validate radius
+    if (filters.radius && (filters.radius < 0 || filters.radius > 50000)) {
+      return NextResponse.json(
+        { success: false, error: 'Radius must be between 0 and 50000 meters' },
+        { status: 400 }
+      );
+    }
+
+    const restaurants = await searchRestaurants(
+      filters.location.lat,
+      filters.location.lng,
+      filters.radius || 5000,
+      filters.category === 'restaurant' ? filters.cuisine : undefined
     );
+    console.log('Restaurants found:', restaurants);
 
-    const data = await response.json();
+    // Add weather data to each restaurant
+    const placesWithWeather = restaurants.map(place => ({
+      ...place,
+      weather: {
+        condition: 'Sunny', // This would come from a weather API in a real app
+        temperature: 25,
+        humidity: 65,
+      },
+    }));
+    console.log('Places with weather:', placesWithWeather);
 
-    if (data.status !== 'OK') {
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch results' }),
-        { 
-          status: 500, 
-          headers: { 
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store'
-          } 
-        }
-      );
-    }
-
-    return new Response(
-      JSON.stringify(data.results),
-      { 
-        status: 200, 
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store'
-        } 
+    return NextResponse.json({ 
+      success: true, 
+      data: placesWithWeather,
+      meta: {
+        count: placesWithWeather.length,
+        radius: filters.radius || 5000,
+        location: filters.location,
       }
-    );
+    });
   } catch (error) {
-    console.error('Search error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to process search request' }),
+    console.error('Search API error:', error);
+    return NextResponse.json(
       { 
-        status: 500, 
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store'
-        } 
-      }
+        success: false, 
+        error: 'Failed to search places',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
     );
   }
 } 

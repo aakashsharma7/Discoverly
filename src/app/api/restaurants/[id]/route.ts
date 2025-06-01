@@ -1,58 +1,29 @@
-import { NextRequest } from 'next/server';
-
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
+import { NextResponse } from 'next/server';
+import { getRestaurantDetails } from '@/services/google-places';
 
 export async function GET(
-  request: NextRequest,
-  { params }: RouteContext
-): Promise<Response> {
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const id = params.id;
-    
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${id}&fields=name,formatted_address,formatted_phone_number,website,rating,reviews,opening_hours,photos,price_level&key=${process.env.GOOGLE_MAPS_API_KEY}`
-    );
-
-    const data = await response.json();
-
-    if (!data.result) {
-      return new Response(
-        JSON.stringify({ error: 'Restaurant not found' }),
-        { 
-          status: 404, 
-          headers: { 
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store'
-          } 
-        }
+    if (!process.env.GOOGLE_MAPS_API_KEY) {
+      return NextResponse.json(
+        { success: false, error: 'API configuration error' },
+        { status: 500 }
       );
     }
 
-    return new Response(
-      JSON.stringify(data.result),
-      { 
-        status: 200, 
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store'
-        } 
-      }
-    );
+    const restaurant = await getRestaurantDetails(params.id);
+    return NextResponse.json({ success: true, data: restaurant });
   } catch (error) {
-    console.error('Error fetching restaurant details:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to fetch restaurant details' }),
+    console.error('Restaurant details API error:', error);
+    return NextResponse.json(
       { 
-        status: 500, 
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store'
-        } 
-      }
+        success: false, 
+        error: 'Failed to fetch restaurant details',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
     );
   }
-} 
+}
