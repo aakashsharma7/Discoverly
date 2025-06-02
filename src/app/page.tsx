@@ -8,8 +8,7 @@ import SearchResults from '@/components/SearchResults'
 import { Weather } from '@/components/Weather'
 import { useLocation } from '@/hooks/useLocation'
 import toast from 'react-hot-toast'
-import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { useApp } from '@/contexts/AuthContext'
 import { Place } from '@/types'
 import Navigation from '@/components/Navigation'
 
@@ -65,14 +64,12 @@ const features = [
 ]
 
 export default function Home() {
-  const { user } = useAuth()
+  const { loading } = useApp()
   const [searchQuery, setSearchQuery] = useState('')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [selectedCuisine, setSelectedCuisine] = useState('all')
   const { search, results, isLoading: isSearchLoading, error: searchError } = useSearch()
   const { location, requestLocation } = useLocation()
-  const [favorites, setFavorites] = useState<Place[]>([])
-  const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
 
   // Rotate background images
@@ -103,31 +100,6 @@ export default function Home() {
       console.log('Location available:', location);
     }
   }, [location, requestLocation])
-
-  const fetchFavorites = async () => {
-    if (!user?.id) {
-      toast.error('Please sign in to view favorites');
-      return;
-    }
-
-    setIsFavoritesLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('place_data')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      
-      const favoritePlaces = data?.map(fav => fav.place_data) || [];
-      setFavorites(favoritePlaces);
-    } catch (error) {
-      console.error('Error fetching favorites:', error);
-      toast.error('Failed to load favorites');
-    } finally {
-      setIsFavoritesLoading(false);
-    }
-  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -190,46 +162,6 @@ export default function Home() {
     }
   }
 
-  const handleToggleFavorite = async (place: Place) => {
-    if (!user) {
-      toast.error('Please sign in to save favorites');
-      return;
-    }
-
-    try {
-      const isFavorite = favorites.some(fav => fav.place_id === place.place_id || fav.id === place.id);
-      
-      if (isFavorite) {
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('place_id', place.place_id || place.id);
-
-        if (error) throw error;
-        setFavorites(favorites.filter(fav => fav.place_id !== place.place_id && fav.id !== place.id));
-        toast.success('Removed from favorites');
-      } else {
-        const { error } = await supabase
-          .from('favorites')
-          .insert([
-            {
-              user_id: user.id,
-              place_id: place.place_id || place.id,
-              place_data: place
-            }
-          ]);
-
-        if (error) throw error;
-        setFavorites([...favorites, place]);
-        toast.success('Added to favorites');
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast.error('Failed to update favorites');
-    }
-  };
-
   return (
     <main className="min-h-screen bg-black">
       <Navigation />
@@ -248,17 +180,7 @@ export default function Home() {
               >
                 <Weather lat={location.lat} lng={location.lng} />
               </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="py-2 flex items-center"
-              >
-                <div className="text-sm text-gray-300">Loading location...</div>
-              </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
         </div>
       </div>
@@ -456,8 +378,8 @@ export default function Home() {
                       places={results}
                       loading={isSearchLoading}
                       error={searchError}
-                      favorites={favorites}
-                      onToggleFavorite={handleToggleFavorite}
+                      favorites={[]}
+                      onToggleFavorite={() => {}}
                     />
                   )}
                 </div>
