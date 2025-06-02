@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { AppProvider } from '@/contexts/AuthContext'
 import { SearchProvider } from '@/contexts/SearchContext'
 
 const inter = Inter({ 
@@ -12,7 +12,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Discoverly - Find Your Perfect Restaurant',
+  title: 'Discoverly - Find Your Next Favorite Restaurant',
   description: 'Discover the best restaurants near you with AI-powered recommendations',
 }
 
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body suppressHydrationWarning className="font-sans">
-        <AuthProvider>
+        <AppProvider>
           <SearchProvider>
             {children}
             <Toaster 
@@ -49,7 +49,7 @@ export default function RootLayout({
               }}
             />
           </SearchProvider>
-        </AuthProvider>
+        </AppProvider>
       </body>
     </html>
   )
