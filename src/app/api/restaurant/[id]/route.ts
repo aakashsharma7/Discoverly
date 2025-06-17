@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRestaurantDetails } from '@/services/google-places';
 
-type RouteContext = {
-  params: {
-    id: string;
-  };
-};
-
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: { id: string } }
 ) {
   try {
     if (!process.env.GOOGLE_MAPS_API_KEY) {
@@ -19,7 +13,7 @@ export async function GET(
       );
     }
 
-    const restaurant = await getRestaurantDetails(context.params.id);
+    const restaurant = await getRestaurantDetails(params.id);
     return NextResponse.json({ success: true, data: restaurant });
   } catch (error) {
     console.error('Restaurant details API error:', error);
