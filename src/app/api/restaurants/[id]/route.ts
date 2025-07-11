@@ -3,13 +3,14 @@ import { getRestaurantDetails } from '@/services/google-places';
 import { z } from 'zod';
 import { apiError, logApiError } from '@/utils/apiHelpers';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
+  // Extract id from the URL
+  const { pathname } = new URL(request.url);
+  const id = pathname.split('/').pop();
+
   // Input validation using Zod
   const idSchema = z.string().min(1, 'Restaurant ID is required');
-  const parseResult = idSchema.safeParse(params.id);
+  const parseResult = idSchema.safeParse(id);
   if (!parseResult.success) {
     return apiError({
       error: 'Invalid restaurant ID',
@@ -24,10 +25,10 @@ export async function GET(
       return apiError({ error: 'API configuration error' });
     }
 
-    const restaurant = await getRestaurantDetails(params.id);
+    const restaurant = await getRestaurantDetails(id!);
     return NextResponse.json({ success: true, data: restaurant });
   } catch (error) {
-    logApiError('RestaurantDetailsAPI', error, { params });
+    logApiError('RestaurantDetailsAPI', error, { id });
     return apiError({
       error: 'Failed to fetch restaurant details',
       details: error instanceof Error ? error.message : 'Unknown error',
