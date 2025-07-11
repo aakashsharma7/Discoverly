@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { WeatherData } from '@/types';
+import { z } from 'zod';
+import { apiError, logApiError } from '@/utils/apiHelpers';
 
 const OPENWEATHER_API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
 const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5';
@@ -14,18 +16,27 @@ export async function GET(request: Request) {
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
 
-    if (!lat || !lng) {
-      return NextResponse.json(
-        { success: false, error: 'Latitude and longitude are required' },
-        { status: 400 }
-      );
+    // Input validation using Zod
+    const coordSchema = z.object({
+      lat: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= -90 && Number(val) <= 90, {
+        message: 'Latitude must be a number between -90 and 90'
+      }),
+      lng: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= -180 && Number(val) <= 180, {
+        message: 'Longitude must be a number between -180 and 180'
+      })
+    });
+    const parseResult = coordSchema.safeParse({ lat, lng });
+    if (!parseResult.success) {
+      return apiError({
+        error: 'Invalid coordinates',
+        details: parseResult.error.errors.map(e => e.message).join(', '),
+        status: 400
+      });
     }
 
     if (!OPENWEATHER_API_KEY) {
-      return NextResponse.json(
-        { success: false, error: 'OpenWeather API key is not configured' },
-        { status: 500 }
-      );
+      logApiError('ConfigError', new Error('OpenWeather API key is not configured'));
+      return apiError({ error: 'OpenWeather API key is not configured' });
     }
 
     const url = `${OPENWEATHER_BASE_URL}/weather?lat=${lat}&lon=${lng}&units=metric&appid=${OPENWEATHER_API_KEY}`;
@@ -47,10 +58,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ success: true, data: weatherData });
   } catch (error) {
-    console.error('Weather API error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch weather data' },
-      { status: 500 }
-    );
+    logApiError('WeatherAPI', error);
+    return apiError({ error: 'Failed to fetch weather data' });
   }
 } 

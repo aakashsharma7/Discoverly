@@ -1,10 +1,34 @@
 import { NextResponse } from 'next/server';
 import type { SearchFilters, Place } from '@/types';
 import { searchRestaurants } from '@/services/google-places';
+import { z } from 'zod';
+import { apiError, logApiError } from '@/utils/apiHelpers';
 
 export async function POST(request: Request) {
   try {
-    const filters: SearchFilters = await request.json();
+    // Input validation using Zod
+    const filtersSchema = z.object({
+      location: z.object({
+        lat: z.number().min(-90).max(90),
+        lng: z.number().min(-180).max(180)
+      }),
+      radius: z.number().min(0).max(50000).optional(),
+      category: z.string().optional(),
+      cuisine: z.string().optional(),
+      query: z.string().optional(),
+      mood: z.string().optional(),
+      budget: z.object({ min: z.number(), max: z.number() }).optional()
+    });
+    const body = await request.json();
+    const parseResult = filtersSchema.safeParse(body);
+    if (!parseResult.success) {
+      return apiError({
+        error: 'Invalid search filters',
+        details: parseResult.error.errors.map(e => e.message).join(', '),
+        status: 400
+      });
+    }
+    const filters: SearchFilters = parseResult.data;
     console.log('Search filters:', filters);
 
     // Validate required fields
@@ -74,14 +98,10 @@ export async function POST(request: Request) {
       }
     });
   } catch (error) {
-    console.error('Search API error:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to search places',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    logApiError('SearchAPI', error);
+    return apiError({
+      error: 'Failed to search places',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 } 

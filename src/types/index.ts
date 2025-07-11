@@ -62,6 +62,8 @@ export interface WeatherData {
   condition: string;
   temperature: number;
   humidity: number;
+  windSpeed: number;
+  icon: string;
 }
 
 export interface ApiResponse<T> {
