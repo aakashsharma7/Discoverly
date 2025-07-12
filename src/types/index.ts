@@ -43,6 +43,7 @@ export interface Place {
   menuUrl?: string;
   url?: string;
   website?: string;
+  bookingUrl?: string;
   hasOnlineDelivery?: boolean;
   hasTableBooking?: boolean;
   weather?: WeatherData;
