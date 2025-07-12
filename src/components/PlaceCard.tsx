@@ -114,7 +114,21 @@ export function PlaceCard({ place, isFavorite = false, onFavoriteToggle }: Place
         {/* Action Buttons */}
         <div className="mt-4 flex gap-2">
           <button
-            onClick={() => window.open(place.url, '_blank')}
+            onClick={() => {
+              if (place.bookingUrl) {
+                window.open(place.bookingUrl, '_blank');
+              } else {
+                const query = encodeURIComponent(`${place.name} ${place.vicinity || place.formatted_address || ''}`);
+                // Try Zomato first
+                const zomatoUrl = `https://www.zomato.com/search?q=${query}`;
+                const swiggyUrl = `https://www.swiggy.com/search?query=${query}`;
+                // Open Zomato, and if user can't find, they can try Swiggy (optionally show both)
+                window.open(zomatoUrl, '_blank');
+                // Optionally, you could show a toast or UI to try Swiggy if Zomato doesn't have it
+                // For now, also open Swiggy in a new tab
+                window.open(swiggyUrl, '_blank');
+              }
+            }}
             className="flex-1 px-4 py-2 text-sm text-center text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-colors duration-200"
           >
             Book Now
