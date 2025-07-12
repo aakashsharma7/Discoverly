@@ -85,9 +85,9 @@ export function PlaceCard({ place, isFavorite = false, onFavoriteToggle }: Place
               {place.user_ratings_total && (
                 <span>({place.user_ratings_total})</span>
               )}
-              {place.price_level && (
+              {place.priceLevel && (
                 <span className="text-gray-300">
-                  {'•'.repeat(place.price_level)}
+                  {'•'.repeat(place.priceLevel)}
                 </span>
               )}
             </div>

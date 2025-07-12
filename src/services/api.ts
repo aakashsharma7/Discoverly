@@ -112,4 +112,19 @@ export const addReview = async (placeId: string, review: Omit<Review, 'id' | 'cr
       error: error instanceof Error ? error.message : 'Failed to add review',
     };
   }
+};
+
+export const toggleFavorite = async (placeId: string): Promise<ApiResponse<any>> => {
+  // Get current favorites
+  const favoritesResponse = await getFavorites();
+  if (!favoritesResponse.success || !favoritesResponse.data) {
+    return { success: false, error: 'Failed to fetch favorites' };
+  }
+  const isFavorite = favoritesResponse.data.some(fav => fav.place_id === placeId);
+  if (isFavorite) {
+    return await removeFavorite(placeId);
+  } else {
+    // For addFavorite, we need the full Place object. In this context, we can't get it, so just return an error.
+    return { success: false, error: 'Place data required to add favorite' };
+  }
 }; 

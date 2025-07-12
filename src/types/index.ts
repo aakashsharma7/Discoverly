@@ -41,6 +41,8 @@ export interface Place {
   user_ratings_total?: number;
   photos: string[];
   menuUrl?: string;
+  url?: string;
+  website?: string;
   hasOnlineDelivery?: boolean;
   hasTableBooking?: boolean;
   weather?: WeatherData;

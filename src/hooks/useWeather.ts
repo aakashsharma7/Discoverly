@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getWeatherData } from '@/services/api';
+import { getWeather } from '@/services/api';
 import { WeatherData } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -20,7 +20,7 @@ export const useWeather = (): UseWeatherReturn => {
     setError(null);
 
     try {
-      const response = await getWeatherData(lat, lng);
+      const response = await getWeather(lat, lng);
       
       if (response.success && response.data) {
         setWeather(response.data);
