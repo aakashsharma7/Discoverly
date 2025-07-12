@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Place } from '@/types';
+import dynamic from 'next/dynamic';
 
 interface MapProps {
   places: Place[];

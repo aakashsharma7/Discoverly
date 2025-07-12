@@ -32,6 +32,8 @@ export interface Place {
   name: string;
   description?: string;
   address: string;
+  vicinity?: string;
+  formatted_address?: string;
   location: Location;
   category: string;
   priceLevel?: number;

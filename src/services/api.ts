@@ -17,6 +17,19 @@ api.interceptors.response.use(
   }
 );
 
+export async function apiFetch<T>(url: string, options?: RequestInit, retries = 2): Promise<T> {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    if (retries > 0) {
+      return apiFetch(url, options, retries - 1);
+    }
+    throw err;
+  }
+}
+
 export const searchPlaces = async (filters: SearchFilters): Promise<ApiResponse<Place[]>> => {
   try {
     const response = await api.post('/search', filters);

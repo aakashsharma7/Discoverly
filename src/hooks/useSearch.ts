@@ -1,4 +1,5 @@
-import { useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import debounce from 'lodash.debounce';
 import { searchPlaces } from '@/services/api';
 import { Place, SearchFilters } from '@/types';
 import toast from 'react-hot-toast';
