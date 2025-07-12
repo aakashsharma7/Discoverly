@@ -5,7 +5,7 @@ const RATE_LIMIT = 60; // requests per minute
 const ipCache = new Map<string, { count: number; last: number }>();
 
 export function middleware(request: NextRequest) {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || 'unknown';
   const now = Date.now();
   const entry = ipCache.get(ip) || { count: 0, last: now };
   if (now - entry.last > 60_000) {

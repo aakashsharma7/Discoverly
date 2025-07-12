@@ -38,6 +38,7 @@ export interface Place {
   category: string;
   priceLevel?: number;
   rating?: number;
+  user_ratings_total?: number;
   photos: string[];
   menuUrl?: string;
   hasOnlineDelivery?: boolean;
